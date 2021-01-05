@@ -1,0 +1,13 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --clr-primary-background: #36393f;
+}
+
+body {
+  background-color: var(--clr-primary-background);
+  color: white;
+}

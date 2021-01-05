@@ -1,0 +1,28 @@
+.login {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 400px;
+  justify-content: center;
+}
+
+.login,
+form {
+  align-self: center;
+}
+
+.login-form {
+  display: flex;
+  max-width: 1920px;
+  width: 90vw;
+  flex-direction: column;
+}
+
+.login-element {
+  margin: 10px !important;
+}
+
+.login-button-container {
+  display: flex;
+  justify-content: center;
+}
