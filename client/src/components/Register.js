@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { Button, TextField, Container } from "@material-ui/core";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import { makeStyles } from "@material-ui/core/styles";
-import "./Login.css";
+import "./Register.css";
 import { v4 as uuidv4 } from "uuid";
 
 const useStyles = makeStyles((theme) => ({
@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Login({ id, onIdSubmit }) {
+function Register({ id, onIdSubmit }) {
   const classes = useStyles();
   const idRef = useRef();
   const nameRef = useRef();
@@ -53,23 +53,45 @@ function Login({ id, onIdSubmit }) {
         ref={formRef}
       >
         <TextField
-          ref={nameRef}
           className="login-element"
           error={error}
           required
           id="outlined-required"
-          placeholder="Name"
+          placeholder="User Name"
           variant="outlined"
           helperText={error ? "This field is required" : ""}
         />
         <TextField
           className="login-element"
+          error={error}
+          required
           id="outlined-required"
-          //   ref={idRef}
-          value={id}
-          onChange={(e) => onIdSubmit(e.target.value)}
+          placeholder="Email"
           variant="outlined"
+          type="email"
+          helperText={error ? "This field is required" : ""}
         />
+        <TextField
+          className="login-element"
+          error={error}
+          required
+          id="outlined-required"
+          placeholder="Password"
+          variant="outlined"
+          type="password"
+          helperText={error ? "This field is required" : ""}
+        />
+        <TextField
+          className="login-element"
+          error={error}
+          required
+          id="outlined-required"
+          placeholder="Repeat Password"
+          type="password"
+          variant="outlined"
+          helperText={error ? "This field is required" : ""}
+        />
+
         <div className="login-button-container">
           <Button
             type="submit"
@@ -78,17 +100,7 @@ function Login({ id, onIdSubmit }) {
             size={"large"}
             className="login-element"
           >
-            Log in
-          </Button>
-          <Button
-            onClick={() => onIdSubmit(uuidv4)}
-            variant="contained"
-            color="primary"
-            value={id}
-            size={"large"}
-            className="login-element"
-          >
-            Generate new ID
+            Create User
           </Button>
         </div>
       </form>
@@ -96,4 +108,4 @@ function Login({ id, onIdSubmit }) {
   );
 }
 
-export default Login;
+export default Register;

@@ -3,7 +3,7 @@ import { ThemeProvider, createMuiTheme } from "@material-ui/core";
 import { deepPurple } from "@material-ui/core/colors";
 import "./App.css";
 import useLocalStorage from "./hooks/useLocalStorage";
-import Login from "./components/Login";
+import Register from "./components/Register";
 import "fontsource-roboto";
 const theme = createMuiTheme({
   palette: {
@@ -20,7 +20,7 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        <Login onIdSubmit={setId} id={id} />
+        <Register onIdSubmit={setId} id={id} />
       </ThemeProvider>
     </div>
   );
