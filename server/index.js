@@ -11,7 +11,7 @@ app.get("/", (req, res) => {
 });
 
 app.post("users/register", async (req, res) => {
-  let { name, email, user_id, password, password2, canRegister } = req.body;
+  let { name, email, user_id, password, password2 } = req.body;
   let errors = [];
 
   if (!name || !email || !password || !password2) {

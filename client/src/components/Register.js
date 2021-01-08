@@ -16,18 +16,54 @@ const useStyles = makeStyles((theme) => ({
 function Register({ id, onIdSubmit }) {
   const classes = useStyles();
   const idRef = useRef();
-  const nameRef = useRef();
+  const NAME_ERROR = 400,
+    EMAIL_ERROR = 401,
+    PASSWORD_ERROR = 401,
+    PASSWORD2_ERROR = 402;
   const formRef = useRef();
-  const [error, setError] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [password2, setPassword2] = useState("");
 
-  const handleSubmit = (e) => {
+  const [error, setError] = useState(false);
+  const [error2, setError2] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formRef.current.reportValidity()) {
-      console.log(nameRef.current);
+    if (handleErrors() < 400) {
       setError(false);
+      let user_id = uuidv4();
+      try {
+        const body = {
+          name,
+          email,
+          user_id,
+          password,
+          password2,
+        };
+        console.log(JSON.stringify(body));
+      } catch (error) {
+        console.error(error.message);
+      }
       console.log("submit working");
     } else {
       setError(true);
+    }
+  };
+
+  const handleErrors = () => {
+    if (!name) {
+      return NAME_ERROR;
+    } else if (!email) {
+      return EMAIL_ERROR;
+    } else if (!password) {
+      return PASSWORD_ERROR;
+    } else if (!password2) {
+      return PASSWORD2_ERROR;
+    } else {
+      return 200;
     }
   };
 
@@ -59,6 +95,7 @@ function Register({ id, onIdSubmit }) {
           id="outlined-required"
           placeholder="User Name"
           variant="outlined"
+          onChange={(e) => setName(e.target.value)}
           helperText={error ? "This field is required" : ""}
         />
         <TextField
@@ -69,6 +106,7 @@ function Register({ id, onIdSubmit }) {
           placeholder="Email"
           variant="outlined"
           type="email"
+          onChange={(e) => setEmail(e.target.value)}
           helperText={error ? "This field is required" : ""}
         />
         <TextField
@@ -79,6 +117,7 @@ function Register({ id, onIdSubmit }) {
           placeholder="Password"
           variant="outlined"
           type="password"
+          onChange={(e) => setPassword(e.target.value)}
           helperText={error ? "This field is required" : ""}
         />
         <TextField
@@ -89,6 +128,7 @@ function Register({ id, onIdSubmit }) {
           placeholder="Repeat Password"
           type="password"
           variant="outlined"
+          onChange={(e) => setPassword2(e.target.value)}
           helperText={error ? "This field is required" : ""}
         />
 
