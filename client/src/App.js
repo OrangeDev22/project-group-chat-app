@@ -5,6 +5,8 @@ import "./App.css";
 import useLocalStorage from "./hooks/useLocalStorage";
 import Register from "./components/Register";
 import "fontsource-roboto";
+import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+
 const theme = createMuiTheme({
   palette: {
     primary: {
@@ -20,7 +22,14 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
-        <Register onIdSubmit={setId} id={id} />
+        <Router>
+          <Switch>
+            <Route exact path="/"><h1>HOME PAGE TEMPLATE</h1></Route>
+            <Route path="/register">
+              <Register onIdSubmit={setId} id={id} />
+            </Route>
+          </Switch>
+        </Router>
       </ThemeProvider>
     </div>
   );
