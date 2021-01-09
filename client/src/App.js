@@ -4,6 +4,7 @@ import { deepPurple } from "@material-ui/core/colors";
 import "./App.css";
 import useLocalStorage from "./hooks/useLocalStorage";
 import Register from "./components/Register";
+import Login from "./components/Login";
 import "fontsource-roboto";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 
@@ -24,7 +25,9 @@ function App() {
       <ThemeProvider theme={theme}>
         <Router>
           <Switch>
-            <Route exact path="/"><h1>HOME PAGE TEMPLATE</h1></Route>
+            <Route exact path="/">
+              <Login />
+            </Route>
             <Route path="/register">
               <Register onIdSubmit={setId} id={id} />
             </Route>

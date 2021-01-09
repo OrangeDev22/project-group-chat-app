@@ -82,7 +82,6 @@ function Register({ id, onIdSubmit }) {
         }}
       />
       <form
-        noValidate
         autoComplete="off"
         action="submit"
         onSubmit={(e) => handleSubmit(e)}
