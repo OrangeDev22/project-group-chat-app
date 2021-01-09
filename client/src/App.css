@@ -5,6 +5,7 @@
 
 :root {
   --clr-primary-background: #36393f;
+  --clr-error: #ff0033;
 }
 
 body {

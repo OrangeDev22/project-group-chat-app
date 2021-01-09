@@ -25,53 +25,54 @@ function Register({ id, onIdSubmit }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
-
   const [error, setError] = useState(false);
-  const [error2, setError2] = useState(false);
-  const [errorMessage, setErrorMessage] = useState(false);
-
+  const [errorMessages, setErrorMessages] = useState([]);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (handleErrors() < 400) {
+    if (!name || !email || !password || !password2 || name.includes(" ")) {
+      setError(true);
+      let message = name.includes(" ")
+        ? "Name format not valid"
+        : "Please verify your fields";
+      setErrorMessages([{ message }]);
+    } else {
       setError(false);
+      setErrorMessages([]);
       let user_id = uuidv4();
       try {
         const body = {
-          name,
-          email,
-          user_id,
-          password,
-          password2,
+          name: name,
+          email: email,
+          user_id: user_id,
+          password: password,
+          password2: password2,
         };
-        console.log(JSON.stringify(body));
+        const response = await fetch("http://localhost:5000/users/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const jsonData = await response.json();
+        if (jsonData.length > 0) {
+          setErrorMessages(jsonData);
+        } else {
+          console.log("submit working");
+          setName("");
+          setEmail("");
+          setPassword("");
+          setPassword2("");
+        }
       } catch (error) {
-        console.error(error.message);
+        console.error("error", error.message);
       }
-      console.log("submit working");
-    } else {
-      setError(true);
-    }
-  };
-
-  const handleErrors = () => {
-    if (!name) {
-      return NAME_ERROR;
-    } else if (!email) {
-      return EMAIL_ERROR;
-    } else if (!password) {
-      return PASSWORD_ERROR;
-    } else if (!password2) {
-      return PASSWORD2_ERROR;
-    } else {
-      return 200;
     }
   };
 
   return (
-    <div className="login">
+    <div className="register">
       <LockOutlinedIcon
         fontSize="large"
-        className="login-icon"
+        className="register-icon"
         style={{
           margin: "10px",
           alignSelf: "center",
@@ -85,60 +86,68 @@ function Register({ id, onIdSubmit }) {
         autoComplete="off"
         action="submit"
         onSubmit={(e) => handleSubmit(e)}
-        className="login-form"
+        className="register-form"
         ref={formRef}
       >
+        <div className="">
+          {errorMessages.map((error, index) => (
+            <p className="register-element error" key={index}>
+              {error.message}
+            </p>
+          ))}
+        </div>
+
         <TextField
-          className="login-element"
+          className="register-element"
           error={error}
           required
           id="outlined-required"
           placeholder="User Name"
           variant="outlined"
+          value={name}
           onChange={(e) => setName(e.target.value)}
-          helperText={error ? "This field is required" : ""}
         />
         <TextField
-          className="login-element"
+          className="register-element"
           error={error}
           required
           id="outlined-required"
           placeholder="Email"
           variant="outlined"
+          value={email}
           type="email"
           onChange={(e) => setEmail(e.target.value)}
-          helperText={error ? "This field is required" : ""}
         />
         <TextField
-          className="login-element"
+          className="register-element"
           error={error}
           required
           id="outlined-required"
           placeholder="Password"
           variant="outlined"
+          value={password}
           type="password"
           onChange={(e) => setPassword(e.target.value)}
-          helperText={error ? "This field is required" : ""}
         />
         <TextField
-          className="login-element"
+          className="register-element"
           error={error}
           required
+          value={password2}
           id="outlined-required"
           placeholder="Repeat Password"
           type="password"
           variant="outlined"
           onChange={(e) => setPassword2(e.target.value)}
-          helperText={error ? "This field is required" : ""}
         />
 
-        <div className="login-button-container">
+        <div className="register-button-container">
           <Button
             type="submit"
             variant="contained"
             color="primary"
             size={"large"}
-            className="login-element"
+            className="register-element"
           >
             Create User
           </Button>

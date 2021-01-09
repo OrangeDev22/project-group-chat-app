@@ -1,4 +1,4 @@
-.login {
+.register {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -6,23 +6,27 @@
   justify-content: center;
 }
 
-.login,
+.register,
 form {
   align-self: center;
 }
 
-.login-form {
+.register-form {
   display: flex;
   max-width: 1920px;
   width: 90vw;
   flex-direction: column;
 }
 
-.login-element {
+.register-element {
   margin: 10px !important;
 }
 
-.login-button-container {
+.register-button-container {
   display: flex;
   justify-content: center;
+}
+
+.error {
+  color: var(--clr-error);
 }
