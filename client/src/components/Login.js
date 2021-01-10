@@ -1,17 +1,38 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import { Button, TextField, InputAdornment } from "@material-ui/core";
 import LockOpenIcon from "@material-ui/icons/LockOpen";
 import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
 import VisibilityIcon from "@material-ui/icons/Visibility";
+import Axios from "axios";
 import "../css/Login.css";
+
 function Login() {
+  let history = useHistory();
   const emailRef = useRef();
   const passwordRef = useRef();
   const [showPassword, setShowPassword] = useState(false);
+  const [errors, setErrors] = useState([]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(emailRef.current.value, passwordRef.current.value);
+    const body = {
+      email: emailRef.current.value,
+      password: passwordRef.current.value,
+    };
+    let response = await fetch("http://localhost:5000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+    let data = await response.json();
+    // console.log("data", data.message);
+    if (data.message === "Authenticated") {
+      history.push("/dashboard");
+    } else {
+      console.log("failed", data);
+    }
   };
 
   return (
@@ -31,6 +52,11 @@ function Login() {
         action="submit"
         onSubmit={(e) => handleSubmit(e)}
       >
+        <div className="login-errors">
+          {errors.map((error) => (
+            <p className="login-element error">{error.message}</p>
+          ))}
+        </div>
         <TextField
           className="login-element"
           placeholder="Email"
@@ -54,7 +80,6 @@ function Login() {
           }}
           type={showPassword ? "text" : "password"}
         />
-
         <Button
           className="login-element"
           variant="contained"

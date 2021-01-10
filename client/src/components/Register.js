@@ -13,7 +13,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function Register({ id, onIdSubmit }) {
+function Register() {
   const classes = useStyles();
   const idRef = useRef();
   const NAME_ERROR = 400,
@@ -56,7 +56,7 @@ function Register({ id, onIdSubmit }) {
         if (jsonData.length > 0) {
           setErrorMessages(jsonData);
         } else {
-          console.log("submit working");
+          // console.log("submit working");
           setName("");
           setEmail("");
           setPassword("");

@@ -1,19 +1,62 @@
 const Express = require("express");
-const { pool } = require("./dbConfig");
-const bcrypt = require("bcrypt");
-const cors = require("cors");
-const { render } = require("ejs");
-
 const app = Express();
 const PORT = 5000;
-app.use(cors());
+const { pool } = require("./dbConfig");
+const passport = require("passport");
+const session = require("express-session");
+const cookieParser = require("cookie-parser");
+const bcrypt = require("bcrypt");
+const cors = require("cors");
+const flash = require("express-flash");
+
+app.use(
+  cors({
+    origin: "http://localhost:3000", // <-- location of the react app were connecting to
+    credentials: true,
+  })
+);
+
 app.use(Express.json());
+app.use(Express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send("Hello world");
 });
-app.get("/users/register", (req, res) => {
-  res.send("hello world");
+app.use(cookieParser("secretcode"));
+app.use(flash());
+app.use(
+  session({
+    secret: "secretcode",
+    resave: true,
+    saveUninitialized: true,
+  })
+);
+// app.use(cookieParser("secretcode"));
+
+app.use(passport.initialize());
+// Store our variables to be persisted across the whole session. Works with app.use(Session) above
+app.use(passport.session());
+const initializePassport = require("./passportConfig");
+initializePassport(passport);
+
+app.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) throw err;
+    if (!user) res.send("No User Exists");
+    else {
+      req.logIn(user, (err) => {
+        if (err) throw err;
+        response = { message: "Authenticated" };
+        res.json(response);
+        // console.log(req.user);
+      });
+    }
+  })(req, res, next);
+});
+
+app.get("/user", (req, res) => {
+  // console.log(req.user);
+  res.json(req.user);
 });
 
 app.post("/users/register", async (req, res) => {
