@@ -139,7 +139,13 @@ function Register() {
           variant="outlined"
           onChange={(e) => setPassword2(e.target.value)}
         />
-
+        <div className="register-element">
+          Already have an account?{" "}
+          <a href="/" className="link">
+            {" "}
+            Log in here :)
+          </a>
+        </div>
         <div className="register-button-container">
           <Button
             type="submit"

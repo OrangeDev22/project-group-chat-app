@@ -42,11 +42,18 @@ initializePassport(passport);
 app.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
     if (err) throw err;
-    if (!user) res.send("No User Exists");
-    else {
+    if (!user) {
+      let response = {
+        message: info.message,
+      };
+      res.json(response);
+    } else {
       req.logIn(user, (err) => {
         if (err) throw err;
-        response = { message: "Authenticated" };
+        let response = {
+          message: "Authenticated",
+          user: { name: user.user_name, email: user.email },
+        };
         res.json(response);
         // console.log(req.user);
       });
@@ -55,8 +62,14 @@ app.post("/login", (req, res, next) => {
 });
 
 app.get("/user", (req, res) => {
-  // console.log(req.user);
+  console.log("request user", req.user);
   res.json(req.user);
+});
+
+app.get("/users/logout", (req, res) => {
+  req.logout();
+  let response = { message: "logged out" };
+  res.json(response);
 });
 
 app.post("/users/register", async (req, res) => {

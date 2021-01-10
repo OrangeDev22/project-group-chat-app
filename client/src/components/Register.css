@@ -26,7 +26,3 @@ form {
   display: flex;
   justify-content: center;
 }
-
-.error {
-  color: var(--clr-error);
-}
