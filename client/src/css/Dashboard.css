@@ -1,0 +1,7 @@
+.dashboard {
+  display: flex;
+}
+.dashboard-panel-right {
+  flex-grow: 1;
+  margin: 10px;
+}

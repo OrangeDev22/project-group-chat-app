@@ -6,6 +6,7 @@
 :root {
   --clr-primary-background: #36393f;
   --clr-primary-link: rgb(39, 168, 255);
+  --clr-contrast: #18191c;
   --clr-primary-link-hover: rgb(118, 200, 255);
   --clr-error: #ff0033;
 }

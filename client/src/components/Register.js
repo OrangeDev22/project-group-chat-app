@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Button, TextField, AppBar } from "@material-ui/core";
+import { Button, TextField } from "@material-ui/core";
 import { useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../features/user";

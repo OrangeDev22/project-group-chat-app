@@ -1,0 +1,23 @@
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #2f3136;
+  border-right: 1px solid var(--clr-contrast);
+}
+.sidebar-tabs {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-tabs-panel {
+  flex-grow: 1;
+}
+
+.sidebar-tabs-container {
+  border-bottom: 1px solid var(--clr-contrast);
+}
+.sidebar-tabs-button {
+  width: 100%;
+  border-top: 1px solid var(--clr-contrast);
+}
