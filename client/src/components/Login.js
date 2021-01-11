@@ -18,7 +18,6 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setloading] = useState(true);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,15 +51,9 @@ function Login() {
     }
   };
 
-  useEffect(() => {
-    console.log("in login", user);
-    if (user.user != null) {
-      history.push("/dashboard");
-    } else {
-      setloading(false);
-    }
-  }, [user]);
-  if (loading) return <h3>Loading...</h3>;
+  if (user.user != null) {
+    history.push("/dashboard");
+  }
   return (
     <div className="login">
       <LockOpenIcon

@@ -1,26 +1,15 @@
 import React, { useRef, useState } from "react";
-import { Button, TextField, Container } from "@material-ui/core";
+import { Button, TextField, AppBar } from "@material-ui/core";
+import { useHistory } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { selectUser } from "../features/user";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import { makeStyles } from "@material-ui/core/styles";
 import "./Register.css";
 import { v4 as uuidv4 } from "uuid";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
-    border: 0,
-    borderRadius: 15,
-    color: "white",
-  },
-}));
-
 function Register() {
-  const classes = useStyles();
-  const idRef = useRef();
-  const NAME_ERROR = 400,
-    EMAIL_ERROR = 401,
-    PASSWORD_ERROR = 401,
-    PASSWORD2_ERROR = 402;
-  const formRef = useRef();
+  let history = useHistory();
+  const user = useSelector(selectUser);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -67,7 +56,9 @@ function Register() {
       }
     }
   };
-
+  if (user.user != null) {
+    history.push("/dashboard");
+  }
   return (
     <div className="register">
       <LockOutlinedIcon
@@ -86,7 +77,6 @@ function Register() {
         action="submit"
         onSubmit={(e) => handleSubmit(e)}
         className="register-form"
-        ref={formRef}
       >
         <div className="">
           {errorMessages.map((error, index) => (

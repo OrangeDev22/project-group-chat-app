@@ -1,23 +1,46 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
+import { makeStyles } from "@material-ui/core/styles";
+import { AppBar, Toolbar, Typography, Button } from "@material-ui/core";
 import { selectUser } from "../features/user";
-import Axios from "axios";
+import IconButton from "@material-ui/core/IconButton";
+import MenuIcon from "@material-ui/icons/Menu";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    flexGrow: 1,
+  },
+  menuButton: {
+    marginRight: theme.spacing(2),
+  },
+  title: {
+    flexGrow: 1,
+  },
+}));
 
 function Dashboard() {
+  const classes = useStyles();
+
   const user = useSelector(selectUser);
 
-  useEffect(() => {
-    console.log("user dashboard", user);
-    // let response = await fetch("http://localhost:5000/user", {
-    //   method: "GET",
-    //   credentials: "include",
-    // });
-    // let data = await response.json();
-    // console.log(data);
-  }, []);
-  console.log("user dashboard 2", user);
   return (
-    <div>
+    <div className="dashboard">
+      <AppBar position="static">
+        <Toolbar>
+          <IconButton
+            edge="start"
+            className={classes.menuButton}
+            color="inherit"
+            aria-label="menu"
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography variant="h6" className={classes.title}>
+            News
+          </Typography>
+          <Button color="inherit">Login</Button>
+        </Toolbar>
+      </AppBar>
       <h1>Welcome back {user.user.name}</h1>
     </div>
   );
