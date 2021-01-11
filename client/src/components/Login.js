@@ -34,12 +34,14 @@ function Login() {
     let data = await response.json();
     // console.log("data", data.message);
     if (data.message === "Authenticated") {
+      console.log(data.user);
       setErrorMessage("");
       setError(false);
       dispatch(
         login({
           email: data.user.email,
           name: data.user.name,
+          user_id: data.user.user_id.slice(0, 4).toUpperCase(),
         })
       );
 

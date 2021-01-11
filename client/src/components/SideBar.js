@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Tabs, Tab } from "@material-ui/core";
+import React, { useState, useEffect } from "react";
+import { Tabs, Tab, Avatar } from "@material-ui/core";
 import { TabPanel, TabContext } from "@material-ui/lab";
-import { AppBar, Toolbar, Typography, Button } from "@material-ui/core";
+import { Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import "../css/SideBar.css";
 
@@ -12,9 +12,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function SideBar() {
+function SideBar({ name, user_id }) {
   const classes = useStyles();
   let [selectedTab, setSelectedTab] = useState("1");
+
   return (
     <div className={`classes.tabs ${"sidebar"}`}>
       <TabContext value={selectedTab}>
@@ -37,7 +38,16 @@ function SideBar() {
           <TabPanel value="1">Item One</TabPanel>
           <TabPanel value="2">Item Two</TabPanel>
         </div>
-        <div className="sidebar-tabs-button">
+        <div className="sidebar-bottom-container">
+          <div className="sidebar-avatar-wrapper">
+            <Avatar>{name.charAt(0).toUpperCase()}</Avatar>
+            <div className="sidebar-avatar-info">
+              <p>{name.toUpperCase()}</p>
+              <p>#{user_id}</p>
+            </div>
+          </div>
+        </div>
+        <div className="sidebar-button">
           <Button color="primary" variant="contained" size={"large"} fullWidth>
             {selectedTab === "1" ? "Create new Chat" : "Add new Contact"}
           </Button>

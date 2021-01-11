@@ -3,7 +3,6 @@
   flex-direction: column;
   height: 100vh;
   background-color: #2f3136;
-  border-right: 1px solid var(--clr-contrast);
 }
 .sidebar-tabs {
   display: flex;
@@ -17,7 +16,22 @@
 .sidebar-tabs-container {
   border-bottom: 1px solid var(--clr-contrast);
 }
-.sidebar-tabs-button {
+
+.sidebar-avatar-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-avatar-info {
+  margin-left: 8px;
+}
+
+.sidebar-bottom-container {
+  background-color: var(--clr-contrast-light);
+  padding: 10px;
+}
+
+.sidebar-button {
   width: 100%;
   border-top: 1px solid var(--clr-contrast);
 }

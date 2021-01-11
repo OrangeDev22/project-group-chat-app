@@ -50,6 +50,7 @@ function Register() {
           setEmail("");
           setPassword("");
           setPassword2("");
+          history.push("/");
         }
       } catch (error) {
         console.error("error", error.message);

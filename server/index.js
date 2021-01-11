@@ -52,7 +52,11 @@ app.post("/login", (req, res, next) => {
         if (err) throw err;
         let response = {
           message: "Authenticated",
-          user: { name: user.user_name, email: user.email },
+          user: {
+            name: user.user_name,
+            email: user.email,
+            user_id: user.user_id,
+          },
         };
         res.json(response);
         // console.log(req.user);
@@ -66,7 +70,7 @@ app.get("/user", (req, res) => {
   res.json(req.user);
 });
 
-app.get("/users/logout", (req, res) => {
+app.get("/logout", (req, res) => {
   req.logout();
   let response = { message: "logged out" };
   res.json(response);

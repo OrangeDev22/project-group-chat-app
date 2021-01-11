@@ -5,7 +5,6 @@ import { deepPurple } from "@material-ui/core/colors";
 import { useDispatch, useSelector } from "react-redux";
 import { login, selectUser } from "./features/user";
 import "./App.css";
-import useLocalStorage from "./hooks/useLocalStorage";
 import Register from "./components/Register";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
@@ -28,11 +27,11 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(async () => {
-    let response = await fetch("http://localhost:5000/user", {
-      method: "GET",
-      credentials: "include",
-    });
     try {
+      let response = await fetch("http://localhost:5000/user", {
+        method: "GET",
+        credentials: "include",
+      });
       let data = await response.json();
       console.log("data in app", data);
       if (data != null) {
@@ -40,19 +39,20 @@ function App() {
           login({
             email: data.email,
             name: data.user_name,
+            user_id: data.user_id.slice(0, 4).toUpperCase(),
           })
         );
-        setLoading(false);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
+    setLoading(false);
   }, []);
   // const [id, setId] = useLocalStorage("id");
   // const [name, setName] = useLocalStorage("name");
 
   if (loading) {
-    return <h1>loading...</h1>;
+    return <></>;
   }
 
   return (
