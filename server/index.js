@@ -1,13 +1,74 @@
 const Express = require("express");
 const app = Express();
+const http = require("http");
+const server = http.createServer(app);
 const PORT = 5000;
+const cors = require("cors");
+const socketio = require("socket.io");
+const io = socketio(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
+});
 const { pool } = require("./dbConfig");
 const passport = require("passport");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const bcrypt = require("bcrypt");
-const cors = require("cors");
 const flash = require("express-flash");
+
+// Run when client connects
+io.on("connection", (socket) => {
+  const id = socket.handshake.query.id;
+  socket.join(id);
+  console.log("New WS Connection...", id);
+
+  socket.on("sendFriendRequest", async (user1, user1Id, user2) => {
+    if (user1 !== user2 && user2 !== "") {
+      const searchUser = await pool.query(
+        `SELECT * FROM users WHERE user_name = $1`,
+        [user2]
+      );
+      if (searchUser.rows.length > 0) {
+        let user2_id = searchUser.rows[0].user_id.slice(0, 4).toUpperCase();
+        let user2Id = searchUser.rows[0].id;
+        if (!verifyRelationShip(user1Id, user2Id)) {
+          type = "pending_second_first";
+          const newRelationShip = await pool.query(
+            "INSERT INTO user_relationship (user_first_id, user_second_id, type) VALUES ($1, $2, $3) RETURNING *",
+            [user1Id, user2Id, type]
+          );
+          if (newRelationShip.rows.length > 0) {
+            relationshipId = newRelationShip.rows[0].id;
+            socket.broadcast
+              .to(user2_id)
+              .emit("receieveFriendRequest", user1, id);
+            socket.emit("returnFriendRequestResponse", true);
+          } else {
+            socket.emit("returnFriendRequestResponse", false);
+          }
+        } else {
+          socket.emit("returnFriendRequestResponse", false);
+        }
+      } else {
+        socket.emit("returnFriendRequestResponse", false);
+      }
+    }
+  });
+});
+
+const verifyRelationShip = async (user1Id, user2Id) => {
+  const searchRelationShip = await pool.query(
+    "SELECT FROM user_relationship WHERE user_first_id = $1 AND user_second_id = $2",
+    [user1Id, user2Id]
+  );
+  if (searchRelationShip.rows.length > 0) {
+    return true;
+  } else {
+    return false;
+  }
+};
 
 app.use(
   cors({
@@ -56,6 +117,7 @@ app.post("/login", (req, res, next) => {
             name: user.user_name,
             email: user.email,
             user_id: user.user_id,
+            id: user.id,
           },
         };
         res.json(response);
@@ -118,4 +180,4 @@ app.post("/users/register", async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log("listening on port" + PORT));
+server.listen(PORT, () => console.log("listening on port" + PORT));

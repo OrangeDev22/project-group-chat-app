@@ -5,10 +5,11 @@
 
 :root {
   --clr-primary-background: #36393f;
+  --clr-primary-background-clear: #484c53;
   --clr-primary-link: rgb(39, 168, 255);
   --clr-contrast: #18191c;
   --clr-contrast-light: #292929;
-  --clr-primary-link-hover: rgb(5, 5, 5);
+  --clr-primary-link-hover: rgb(120, 201, 255);
   --clr-error: #ff0033;
 }
 
@@ -28,6 +29,11 @@ body {
   color: var(--clr-primary-link-hover) !important;
   text-decoration: underline;
 }
+
+.show-button {
+  cursor: pointer;
+}
+
 .error {
   color: var(--clr-error);
 }

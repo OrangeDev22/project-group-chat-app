@@ -3,5 +3,30 @@
 }
 .dashboard-panel-right {
   flex-grow: 1;
-  margin: 10px;
 }
+.dashboard-buttons-container {
+  border-bottom: solid 1px var(--clr-contrast);
+}
+.dashboard-buttongroup {
+  margin: 6.3px 10px;
+}
+
+.right-panel-friend-request-item {
+  display: flex;
+  align-items: center;
+  margin: 10px;
+  padding: 10px;
+}
+
+.right-panel-friend-request-item:hover {
+  background-color: var(--clr-primary-background-clear);
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.friend-request-buttons-container {
+  margin-left: auto;
+}
+/* .dashboard-buttongroup-button {
+  margin-right: 10px !important;
+} */

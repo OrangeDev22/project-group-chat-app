@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-
+import { useSocket } from "../contexts/SocketProvider";
+// const socket = useSocket();
 export const appSlice = createSlice({
   name: "app",
   initialState: {
@@ -10,6 +11,10 @@ export const appSlice = createSlice({
     setChannelId: (state, action) => {
       state.app += action.payload;
     },
+    // sendFriendRequest: (state, action) => {
+    //   const { user1, user2 } = action.payload;
+    //   socket.emit("send-friend-request", { user1, user2 });
+    // },
   },
 });
 

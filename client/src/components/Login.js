@@ -34,14 +34,12 @@ function Login() {
     let data = await response.json();
     // console.log("data", data.message);
     if (data.message === "Authenticated") {
-      console.log(data.user);
-      setErrorMessage("");
-      setError(false);
       dispatch(
         login({
           email: data.user.email,
           name: data.user.name,
           user_id: data.user.user_id.slice(0, 4).toUpperCase(),
+          id: data.user.id,
         })
       );
 
@@ -53,8 +51,14 @@ function Login() {
     }
   };
 
+  useEffect(() => {
+    if (user.user != null) {
+      history.push("/dashboard");
+    }
+  }, []);
+
   if (user.user != null) {
-    history.push("/dashboard");
+    return <></>;
   }
   return (
     <div className="login">
@@ -93,6 +97,7 @@ function Login() {
             endAdornment: (
               <InputAdornment
                 position="end"
+                className="show-button"
                 onClick={() => setShowPassword(!showPassword)}
               >
                 {showPassword ? <VisibilityIcon /> : <VisibilityOffIcon />}

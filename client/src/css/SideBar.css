@@ -35,3 +35,27 @@
   width: 100%;
   border-top: 1px solid var(--clr-contrast);
 }
+/* .modal-add-friend {
+  width: 400px;
+  background-color: var(--clr-primary-background);
+  padding: 30px;
+} */
+.modal-form {
+  display: flex;
+  flex-direction: column;
+}
+.sidebar-friend-list-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  font-size: 0.9em;
+  margin: 8px;
+  color: #b4b4b4;
+}
+
+.sidebar-friend-list-item:hover {
+  background-color: #393b41;
+  border-radius: 2px;
+  color: white;
+  cursor: pointer;
+}
