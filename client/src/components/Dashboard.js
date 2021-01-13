@@ -19,9 +19,21 @@ function Dashboard() {
   const socket = useSocket();
 
   useEffect(() => {
+    async function fetchUserData() {
+      let response = await fetch(
+        `http://localhost:5000/user/data?id=${user.user.id}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      let data = await response.json();
+      console.log("relationships");
+    }
     if (user.user !== null) {
       setName(user.user.name);
       setUserId(user.user.user_id);
+      // fetchUserData();
     } else {
       history.push("/");
     }

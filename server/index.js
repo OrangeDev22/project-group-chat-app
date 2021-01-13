@@ -33,7 +33,9 @@ io.on("connection", (socket) => {
       if (searchUser.rows.length > 0) {
         let user2_id = searchUser.rows[0].user_id.slice(0, 4).toUpperCase();
         let user2Id = searchUser.rows[0].id;
-        if (!verifyRelationShip(user1Id, user2Id)) {
+        let relationShipExist = await verifyRelationShip(user1Id, user2Id);
+        if (!relationShipExist) {
+          console.log("ok so it doesnt exist");
           type = "pending_second_first";
           const newRelationShip = await pool.query(
             "INSERT INTO user_relationship (user_first_id, user_second_id, type) VALUES ($1, $2, $3) RETURNING *",
@@ -58,7 +60,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const verifyRelationShip = async (user1Id, user2Id) => {
+async function verifyRelationShip(user1Id, user2Id) {
   const searchRelationShip = await pool.query(
     "SELECT FROM user_relationship WHERE user_first_id = $1 AND user_second_id = $2",
     [user1Id, user2Id]
@@ -68,7 +70,7 @@ const verifyRelationShip = async (user1Id, user2Id) => {
   } else {
     return false;
   }
-};
+}
 
 app.use(
   cors({
@@ -130,6 +132,21 @@ app.post("/login", (req, res, next) => {
 app.get("/user", (req, res) => {
   console.log("request user", req.user);
   res.json(req.user);
+});
+
+app.get("/user/data", async (req, res) => {
+  console.log("body", req.query);
+  const { id } = req.query;
+  let searchRelationShips = await pool.query(
+    "SELECT * FROM user_relationship WHERE user_first_id=$1 OR user_second_id=$1",
+    [id]
+  );
+  if (searchRelationShips.rows.length > 0) {
+    res.status(200).json(searchRelationShips.rows);
+  } else {
+    let response = { message: "didnt find any relationships" };
+    res.status(400).json(response);
+  }
 });
 
 app.get("/logout", (req, res) => {

@@ -48,26 +48,7 @@ function App() {
       } catch (error) {
         console.error(error);
       }
-      try {
-        let response = await fetch("http://localhost:5000/user", {
-          method: "GET",
-          credentials: "include",
-        });
-        let data = await response.json();
 
-        if (data != null) {
-          dispatch(
-            login({
-              email: data.email,
-              name: data.user_name,
-              user_id: data.user_id.slice(0, 4).toUpperCase(),
-              id: data.id,
-            })
-          );
-        }
-      } catch (error) {
-        console.error(error);
-      }
       setLoading(false);
     }
 
