@@ -11,7 +11,7 @@ export const friendsSlice = createSlice({
   reducers: {
     addFriend: (state, action) => {
       const newFriend = action.payload.friend;
-      state.friends = [...state.friends, newFriend];
+      state.friends = [newFriend, ...state.friends];
     },
     addFriendRequest: (state, action) => {
       const newRequest = action.payload.newFriendRequest;

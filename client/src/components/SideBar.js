@@ -6,7 +6,12 @@ import { Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import "../css/SideBar.css";
 import { selectUser } from "../features/user";
-import { selectFriends, addPendingRequest } from "../features/friendsSlice";
+import {
+  selectFriends,
+  addPendingRequest,
+  addFriend,
+  deleteRelationship,
+} from "../features/friendsSlice";
 import { useSelector, useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -49,10 +54,6 @@ function SideBar({ name, user_id }) {
   const [openFriendModal, setOpenFriendModal] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
-  useEffect(() => {
-    setFriends(friendsList.friends);
-  }, [friendsList.friends]);
-
   let clickHandler = () => {
     setModalMessage("");
     setOpenFriendModal(true);
@@ -61,6 +62,38 @@ function SideBar({ name, user_id }) {
   let handleClose = () => {
     openFriendModal && setOpenFriendModal(false);
   };
+
+  useEffect(() => {
+    if (socket == null) return;
+
+    socket.on("friendRequestAccepted", (relationshipId, name, type) => {
+      if (type === "receiver") {
+        dispatch(
+          deleteRelationship({
+            relationshipId,
+            type: "pending_second_first",
+          })
+        );
+      } else {
+        dispatch(
+          deleteRelationship({
+            relationshipId,
+            type: "request_sender",
+          })
+        );
+      }
+      dispatch(
+        addFriend({
+          friend: {
+            relationshipId,
+            name,
+          },
+        })
+      );
+    });
+
+    return () => socket.off("friendRequestAccepted");
+  }, [socket]);
 
   let handleSendFriendRequest = (e) => {
     e.preventDefault();

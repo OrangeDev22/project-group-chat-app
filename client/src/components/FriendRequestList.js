@@ -70,6 +70,10 @@ function FriendRequestList() {
     }
   };
 
+  const addFriendHandler = async (id, receiverName, senderName) => {
+    socket.emit("addFriend", id, senderName, receiverName);
+  };
+
   const blockUserhandler = async (id, name) => {
     let response = await blockRelationship(id, "blocked_by_second");
 
@@ -156,6 +160,13 @@ function FriendRequestList() {
                             variant="contained"
                             size="small"
                             className={classes.accept}
+                            onClick={() =>
+                              addFriendHandler(
+                                request.id,
+                                user.user.name,
+                                request.name
+                              )
+                            }
                           >
                             Accept
                           </Button>

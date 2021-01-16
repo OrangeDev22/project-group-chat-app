@@ -24,6 +24,41 @@ io.on("connection", (socket) => {
   socket.join(id);
   console.log("New WS Connection...", id);
 
+  socket.on("addFriend", async (relationshipId, senderName, receiverName) => {
+    try {
+      const searchRelationship = await pool.query(
+        "UPDATE user_relationship SET type = $2 WHERE id = $1 AND type NOT LIKE '%blocked%' RETURNING *",
+        [relationshipId, `friends`]
+      );
+      if (searchRelationship.rows.length > 0) {
+        const senderId = searchRelationship.rows[0].user_first_id;
+        const searchSenderUserId = await pool.query(
+          "SELECT user_id FROM users WHERE id =$1",
+          [senderId]
+        );
+        if (searchSenderUserId.rows.length > 0) {
+          const receiverUserId = searchSenderUserId.rows[0].user_id;
+          socket.emit(
+            "friendRequestAccepted",
+            relationshipId,
+            senderName,
+            "receiver"
+          );
+          socket.broadcast
+            .to(receiverUserId)
+            .emit(
+              "friendRequestAccepted",
+              relationshipId,
+              receiverName,
+              "sender"
+            );
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  });
+
   socket.on("deleteRelationShip", async (id, type) => {
     try {
       const deleteRelationship = await pool.query(
@@ -191,7 +226,7 @@ app.get("/user/requests", async (req, res) => {
         let relationship = {
           id,
           name: userName.rows[0].user_name,
-          type,
+          type: requestType === "friend_request" ? type : "request_sender",
           timestamp,
         };
         type.includes("blocked") || usersNames.push(relationship);
