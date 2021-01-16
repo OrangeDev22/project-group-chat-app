@@ -24,39 +24,58 @@ io.on("connection", (socket) => {
   socket.join(id);
   console.log("New WS Connection...", id);
 
+  socket.on("deleteRelationShip", async (id, type) => {
+    try {
+      const deleteRelationship = await pool.query(
+        "DELETE FROM user_relationship WHERE id =$1",
+        [id]
+      );
+      if (deleteRelationship.rowCount > 0) {
+        socket.emit("relationshipDeleted", id, type);
+      }
+    } catch (error) {
+      console.error("error", error);
+    }
+  });
+
   socket.on("sendFriendRequest", async (user1, user1Id, user2) => {
+    let message = "";
+    let relationshipId = "";
     if (user1 !== user2 && user2 !== "") {
       const searchUser = await pool.query(
         `SELECT * FROM users WHERE user_name = $1`,
         [user2]
       );
       if (searchUser.rows.length > 0) {
-        let user2_id = searchUser.rows[0].user_id.slice(0, 4).toUpperCase();
+        let user2_id = searchUser.rows[0].user_id;
         let user2Id = searchUser.rows[0].id;
         let relationShipExist = await verifyRelationShip(user1Id, user2Id);
         if (!relationShipExist) {
-          console.log("ok so it doesnt exist");
           type = "pending_second_first";
           const newRelationShip = await pool.query(
-            "INSERT INTO user_relationship (user_first_id, user_second_id, type) VALUES ($1, $2, $3) RETURNING *",
-            [user1Id, user2Id, type]
+            "INSERT INTO user_relationship (user_first_id, user_second_id, type, timestamp) VALUES ($1, $2, $3, $4) RETURNING *",
+            [user1Id, user2Id, type, +new Date()]
           );
           if (newRelationShip.rows.length > 0) {
             relationshipId = newRelationShip.rows[0].id;
             socket.broadcast
               .to(user2_id)
-              .emit("receieveFriendRequest", user1, id);
-            socket.emit("returnFriendRequestResponse", true);
+              .emit("receiveFriendRequest", user1, relationshipId);
           } else {
-            socket.emit("returnFriendRequestResponse", false);
+            message = "Oops! something went wrong on our side!";
           }
         } else {
-          socket.emit("returnFriendRequestResponse", false);
+          message = "You already have relationship with this person";
         }
       } else {
-        socket.emit("returnFriendRequestResponse", false);
+        message =
+          "We didn't find the user. :c please make sure of caps and typos";
       }
+    } else {
+      message =
+        "WOW! Is good to love yourself but you can't befriend yourself in this app. :)";
     }
+    socket.emit("returnFriendRequestResponse", message, user2, relationshipId);
   });
 });
 
@@ -123,29 +142,64 @@ app.post("/login", (req, res, next) => {
           },
         };
         res.json(response);
-        // console.log(req.user);
       });
     }
   })(req, res, next);
 });
 
 app.get("/user", (req, res) => {
-  console.log("request user", req.user);
   res.json(req.user);
 });
 
-app.get("/user/data", async (req, res) => {
-  console.log("body", req.query);
-  const { id } = req.query;
-  let searchRelationShips = await pool.query(
-    "SELECT * FROM user_relationship WHERE user_first_id=$1 OR user_second_id=$1",
-    [id]
+app.get("/user/requests", async (req, res) => {
+  const userId = req.query.id;
+  const npp = req.query.npp;
+  const requestType = req.query.type;
+  const column =
+    requestType === "friend_request" ? "user_second_id" : "user_first_id";
+  const numPerPage = parseInt(npp, 10) || 1;
+  const page = parseInt(req.query.page, 10) || 0;
+  const lastFetched = parseInt(req.query.lts, 10) || 0;
+  const start = (page - 1) * numPerPage;
+  const searchRelationShips = await pool.query(
+    `SELECT * FROM user_relationship WHERE ${column}= $1 AND timestamp < $3 ORDER BY timestamp DESC LIMIT $2 `,
+    [userId, numPerPage, lastFetched]
   );
+
   if (searchRelationShips.rows.length > 0) {
-    res.status(200).json(searchRelationShips.rows);
+    let usersNames = [];
+    for (let {
+      id,
+      user_first_id,
+      user_second_id,
+      type,
+      timestamp,
+    } of searchRelationShips.rows) {
+      let userName = {};
+
+      if (requestType === "friend_request") {
+        userName = await pool.query("SELECT user_name FROM users WHERE id=$1", [
+          user_first_id,
+        ]);
+      } else {
+        userName = await pool.query("SELECT user_name FROM users WHERE id=$1", [
+          user_second_id,
+        ]);
+      }
+
+      if (userName.rows.length > 0) {
+        let relationship = {
+          id,
+          name: userName.rows[0].user_name,
+          type,
+          timestamp,
+        };
+        type.includes("blocked") || usersNames.push(relationship);
+      }
+    }
+    res.status(200).send(usersNames);
   } else {
-    let response = { message: "didnt find any relationships" };
-    res.status(400).json(response);
+    res.status(204).send("didnt find any relationships");
   }
 });
 
@@ -153,6 +207,67 @@ app.get("/logout", (req, res) => {
   req.logout();
   let response = { message: "logged out" };
   res.json(response);
+});
+
+app.get("/user/block", async (req, res) => {
+  const userId = parseInt(req.query.id);
+  const searchBlockedRelationships = await pool.query(
+    "SELECT * FROM user_relationship WHERE user_first_id = $1 OR user_second_id = $1 AND type LIKE '%blocked%'",
+    [userId]
+  );
+  if (searchBlockedRelationships.rows.length > 0) {
+    let usersBlocked = [];
+    for (let relationship of searchBlockedRelationships.rows) {
+      let userBlockedId;
+      if (relationship.user_first_id === userId) {
+        userBlockedId =
+          relationship.type === "blocked_by_first"
+            ? relationship.user_second_id
+            : null;
+      } else {
+        userBlockedId =
+          relationship.type === "blocked_by_second"
+            ? relationship.user_first_id
+            : null;
+      }
+      if (userBlockedId) {
+        const searchBlockedName = await pool.query(
+          "SELECT user_name FROM users WHERE id =$1",
+          [userBlockedId]
+        );
+        searchBlockedName.rows.length > 0 &&
+          usersBlocked.push({
+            name: searchBlockedName.rows[0].user_name,
+            id: relationship.id,
+            type: relationship.type,
+          });
+      }
+    }
+    usersBlocked.length > 0
+      ? res.status(200).json(usersBlocked)
+      : res.status(204).send("didn't find any blocked users");
+  } else {
+    res.status(200).send("didn't find any blocked users");
+  }
+});
+
+app.put("/relationship/block", async (req, res) => {
+  const relationshipId = parseInt(req.query.id);
+  const newType = parseInt(req.query.type);
+  try {
+    const blockRelationship = await pool.query(
+      "UPDATE user_relationship SET type = $1 WHERE id = $2",
+      [newType, relationshipId]
+    );
+
+    if (blockRelationship.rowCount > 0) {
+      res.status(200).send("blocked");
+    } else {
+      res.status(204).send("wasnt able to block");
+    }
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 app.post("/users/register", async (req, res) => {
@@ -197,4 +312,18 @@ app.post("/users/register", async (req, res) => {
   }
 });
 
-server.listen(PORT, () => console.log("listening on port" + PORT));
+server.listen(PORT, () => {
+  console.log("listening on port" + PORT);
+  // > 27
+  async function test() {
+    for (let i = 0; i < 10; i++) {
+      console.log("inserting");
+
+      await pool.query(
+        "INSERT INTO user_relationship (user_first_id, user_second_id, type, timestamp) VALUES ($1, $2, $3,$4) RETURNING *",
+        [47, 48, "pending_second_first", +new Date()]
+      );
+    }
+  }
+  // test();
+});

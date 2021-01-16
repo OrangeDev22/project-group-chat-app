@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { selectUser } from "../features/user";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
-import "./Register.css";
+import "../css/Register.css";
 import { v4 as uuidv4 } from "uuid";
 
 function Register() {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ThemeProvider, createMuiTheme } from "@material-ui/core";
-import { deepPurple } from "@material-ui/core/colors";
+import { purple, red, green, deepPurple } from "@material-ui/core/colors";
 import { useDispatch, useSelector } from "react-redux";
 import { login, selectUser } from "./features/user";
 import "./App.css";
@@ -16,7 +16,9 @@ const theme = createMuiTheme({
     primary: {
       main: deepPurple[400],
     },
-
+    secondary: {
+      main: red[500],
+    },
     type: "dark",
   },
 });
@@ -40,7 +42,7 @@ function App() {
             login({
               email: data.email,
               name: data.user_name,
-              user_id: data.user_id.slice(0, 4).toUpperCase(),
+              user_id: data.user_id,
               id: data.id,
             })
           );

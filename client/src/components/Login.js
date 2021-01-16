@@ -32,28 +32,26 @@ function Login() {
       body: JSON.stringify(body),
     });
     let data = await response.json();
-    // console.log("data", data.message);
+
     if (data.message === "Authenticated") {
       dispatch(
         login({
           email: data.user.email,
           name: data.user.name,
-          user_id: data.user.user_id.slice(0, 4).toUpperCase(),
+          user_id: data.user.user_id,
           id: data.user.id,
         })
       );
-
-      history.push("/dashboard");
+      window.location.replace("/dashboard");
     } else {
       setError(true);
       setErrorMessage(data.message);
-      // console.log("failed", data.message);
     }
   };
 
   useEffect(() => {
     if (user.user != null) {
-      history.push("/dashboard");
+      window.location.replace("/dashboard");
     }
   }, []);
 

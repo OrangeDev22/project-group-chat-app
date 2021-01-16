@@ -6,11 +6,7 @@ import { Button } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import "../css/SideBar.css";
 import { selectUser } from "../features/user";
-import {
-  selectFriends,
-  addFriend,
-  addFriendRequest,
-} from "../features/friendsSlice";
+import { selectFriends, addPendingRequest } from "../features/friendsSlice";
 import { useSelector, useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
@@ -58,9 +54,8 @@ function SideBar({ name, user_id }) {
   }, [friendsList.friends]);
 
   let clickHandler = () => {
-    if (selectedTab === "2") {
-      setOpenFriendModal(true);
-    }
+    setModalMessage("");
+    setOpenFriendModal(true);
   };
 
   let handleClose = () => {
@@ -71,15 +66,20 @@ function SideBar({ name, user_id }) {
     e.preventDefault();
     let user2 = modalInputRef.current.value;
     let user1 = user.user;
-    console.log("modal input", modalInputRef.current.value);
     socket.emit("sendFriendRequest", user1.name, user1.id, user2);
-    socket.on("returnFriendRequestResponse", function (message) {
-      if (message) {
+    socket.on("returnFriendRequestResponse", function (message, name, id) {
+      if (!message) {
         setOpenFriendModal(false);
-      } else {
-        setModalMessage(
-          "We didn't find the user. :c please make sure of caps and typos"
+        dispatch(
+          addPendingRequest({
+            relationship: {
+              name,
+              id,
+            },
+          })
         );
+      } else {
+        setModalMessage(message);
       }
       socket.off("returnFriendRequestResponse");
     });
@@ -118,7 +118,7 @@ function SideBar({ name, user_id }) {
   );
 
   return (
-    <div className={`sidebar ${classes.tabs}`}>
+    <div className={`sidebar`}>
       <TabContext value={selectedTab}>
         <div className="sidebar-tabs">
           {" "}
@@ -156,8 +156,7 @@ function SideBar({ name, user_id }) {
           <div className="sidebar-avatar-wrapper">
             <Avatar>{name.charAt(0).toUpperCase()}</Avatar>
             <div className="sidebar-avatar-info">
-              <p>{name.toUpperCase()}</p>
-              <p>#{user_id}</p>
+              <p>{name}</p>
             </div>
           </div>
         </div>

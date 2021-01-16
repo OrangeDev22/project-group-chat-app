@@ -9,8 +9,10 @@
   --clr-primary-link: rgb(39, 168, 255);
   --clr-contrast: #18191c;
   --clr-contrast-light: #292929;
+  --clr-bordert: #575757;
   --clr-primary-link-hover: rgb(120, 201, 255);
   --clr-error: #ff0033;
+  --clr-primary-background-dark: #2f3136;
 }
 
 body {
@@ -36,4 +38,22 @@ body {
 
 .error {
   color: var(--clr-error);
+}
+
+*::-webkit-scrollbar-track {
+  border-radius: 10px;
+  background-color: var(--clr-primary-background-dark);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+
+  border-radius: 10px;
+  background-color: var(--clr-primary-background-dark);
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  height: 48px;
+  background-color: var(--clr-contrast-light);
 }

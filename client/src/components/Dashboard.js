@@ -7,37 +7,83 @@ import { useSocket } from "../contexts/SocketProvider";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { selectUser, logout } from "../features/user";
 import FriendRequestList from "./FriendRequestList";
+import { fetchRequests, fetchBlockedRelationships } from "../utils/useFetch";
+import BlockedList from "./BlockedList";
+import {
+  selectFriends,
+  addFriendRequest,
+  setFriendRequests,
+  resetFriendRequests,
+  resetPendingRequests,
+  setPendingRequests,
+  deleteRelationship,
+  setBlockedUsers,
+  removeAll,
+} from "../features/friendsSlice";
 import "../css/Dashboard.css";
+import PenddingRequests from "./PendingRequestsList";
 
 function Dashboard() {
   let history = useHistory();
   const user = useSelector(selectUser);
-  const [selectedButton, setSelectedButton] = useState(0);
+  const friends = useSelector(selectFriends);
+  const [selectedButton, setSelectedButton] = useState(2);
   const [name, setName] = useState("");
   const [userId, setUserId] = useState("");
   const dispatch = useDispatch();
   const socket = useSocket();
 
   useEffect(() => {
-    async function fetchUserData() {
-      let response = await fetch(
-        `http://localhost:5000/user/data?id=${user.user.id}`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
+    const loadRequests = async () => {
+      const FriendsRequests = await fetchRequests(
+        user.user.id,
+        20,
+        1,
+        "friend_request",
+        +new Date()
       );
-      let data = await response.json();
-      console.log("relationships");
-    }
+      const PenddingRequests = await fetchRequests(
+        user.user.id,
+        20,
+        1,
+        "pending_second_first",
+        +new Date()
+      );
+      const BlockedUsers = await fetchBlockedRelationships(user.user.id);
+      console.log("blocked users", BlockedUsers);
+      if (FriendsRequests) {
+        dispatch(setFriendRequests(FriendsRequests));
+      }
+      if (PenddingRequests) {
+        dispatch(setPendingRequests(PenddingRequests));
+      }
+      if (BlockedUsers) {
+        dispatch(setBlockedUsers(BlockedUsers));
+      }
+    };
+
     if (user.user !== null) {
       setName(user.user.name);
       setUserId(user.user.user_id);
-      // fetchUserData();
+      loadRequests();
     } else {
       history.push("/");
     }
   }, []);
+
+  const changeButtonHandler = (newButton) => {
+    if (selectedButton === 0) {
+      if (friends.friendRequests.length > 20) {
+        dispatch(resetFriendRequests());
+      }
+    }
+    if (selectedButton === 1) {
+      if (friends.pendingRequests.length > 20) {
+        dispatch(resetPendingRequests());
+      }
+    }
+    setSelectedButton(newButton);
+  };
 
   const handleLogout = async () => {
     let response = await fetch("http://localhost:5000/logout", {
@@ -47,10 +93,43 @@ function Dashboard() {
     let data = await response.json();
     if (data.message === "logged out") {
       dispatch(logout());
-      console.log("logged out");
+      dispatch(removeAll());
       history.push("/");
     }
   };
+
+  useEffect(() => {
+    if (socket == null) return;
+
+    socket.on("receiveFriendRequest", function (senderName, id) {
+      console.log("SENDER", senderName);
+      dispatch(
+        addFriendRequest({
+          newFriendRequest: {
+            name: senderName,
+            id,
+          },
+        })
+      );
+    });
+
+    return () => socket.off("receiveFriendRequest");
+  }, [socket]);
+
+  useEffect(() => {
+    if (socket == null) return;
+
+    socket.on("relationshipDeleted", (relationshipId, type) => {
+      dispatch(
+        deleteRelationship({
+          relationshipId,
+          type,
+        })
+      );
+    });
+
+    return () => socket.off("relationshipDeleted");
+  }, [socket]);
 
   if (user.user === null) {
     <></>;
@@ -70,7 +149,7 @@ function Dashboard() {
                     size={"small"}
                     className="dashboard-buttongroup-button"
                     variant={selectedButton === 0 ? "contained" : "text"}
-                    onClick={() => setSelectedButton(0)}
+                    onClick={() => changeButtonHandler(0)}
                   >
                     Requests
                   </Button>
@@ -79,7 +158,7 @@ function Dashboard() {
                     size={"small"}
                     className="dashboard-buttongroup-button"
                     variant={selectedButton === 1 ? "contained" : "text"}
-                    onClick={() => setSelectedButton(1)}
+                    onClick={() => changeButtonHandler(1)}
                   >
                     Pending
                   </Button>
@@ -88,16 +167,17 @@ function Dashboard() {
                     style={{ marginRight: 10 }}
                     className="dashboard-buttongroup-button"
                     variant={selectedButton === 2 ? "contained" : "text"}
-                    onClick={() => setSelectedButton(2)}
+                    onClick={() => changeButtonHandler(2)}
                   >
                     Blocked
                   </Button>
+
                   <Button
                     size={"small"}
                     style={{ marginRight: 10 }}
                     className="dashboard-buttongroup-button"
                     variant={selectedButton === 3 ? "contained" : "text"}
-                    onClick={() => setSelectedButton(3)}
+                    onClick={() => changeButtonHandler(3)}
                   >
                     Settings
                   </Button>
@@ -115,7 +195,8 @@ function Dashboard() {
                 </div>
               </div>
               {selectedButton === 0 && <FriendRequestList />}
-              {selectedButton === 2 && <h2>Blocked template</h2>}
+              {selectedButton === 1 && <PenddingRequests />}
+              {selectedButton === 2 && <BlockedList />}
               {selectedButton === 3 && <h2>Settings template</h2>}
             </Route>
             <Route path="/dashboard/:chanel">
