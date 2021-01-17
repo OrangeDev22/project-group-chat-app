@@ -27,9 +27,7 @@ export const friendsSlice = createSlice({
     },
     addBlockedUser: (state, action) => {
       const newUserBlocked = action.payload.relationship;
-      const tempArray = state.usersBlocked;
-      tempArray.unshift(newUserBlocked);
-      state.usersBlocked = tempArray;
+      state.usersBlocked = [newUserBlocked, ...state.usersBlocked];
     },
     setFriends: (state, action) => {
       state.friends = [...state.friends, ...action.payload];
@@ -43,6 +41,9 @@ export const friendsSlice = createSlice({
     setFriendRequests: (state, action) => {
       state.friendRequests = [...state.friendRequests, ...action.payload];
     },
+    resetFriends: (state) => {
+      state.friends = state.friends.slice(0, 20);
+    },
     resetFriendRequests: (state) => {
       state.friendRequests = state.friendRequests.slice(0, 20);
     },
@@ -53,6 +54,11 @@ export const friendsSlice = createSlice({
       const { relationshipId, type } = action.payload;
 
       switch (type) {
+        case "friends":
+          state.friends = state.friends.filter(
+            (friend) => friend.id !== relationshipId
+          );
+          break;
         case "request_sender":
           state.pendingRequests = state.pendingRequests.filter(
             (relationship) => relationship.id !== relationshipId
@@ -87,6 +93,7 @@ export const {
   setFriendRequests,
   setPendingRequests,
   addPendingRequest,
+  resetFriends,
   deleteRelationship,
   resetFriendRequests,
   removeAll,

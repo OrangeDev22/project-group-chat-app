@@ -18,6 +18,26 @@ export const fetchFriends = async (id, numberPerPage, page, timestamp) => {
   }
 };
 
+export const blockFriend = async (relationshipId, userId) => {
+  try {
+    const body = { relationshipId, userId };
+    let query = await fetch(`http://localhost:5000/user/friends/block`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify(body),
+    });
+    if (query.status === 200) {
+      let type = await query.text();
+      return type;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const fetchRequests = async (
   id,
   numberPerPage,

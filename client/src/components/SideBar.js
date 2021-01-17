@@ -8,6 +8,7 @@ import "../css/SideBar.css";
 import { selectUser } from "../features/user";
 import {
   selectFriends,
+  resetFriends,
   addPendingRequest,
   addFriend,
   deleteRelationship,
@@ -47,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
 function SideBar({ name, user_id }) {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-  const friendsList = useSelector(selectFriends);
+
   const classes = useStyles();
   const modalInputRef = useRef();
   const socket = useSocket();
@@ -63,6 +64,13 @@ function SideBar({ name, user_id }) {
 
   let handleClose = () => {
     openFriendModal && setOpenFriendModal(false);
+  };
+
+  const changeTabHandler = (value) => {
+    setSelectedTab(value);
+    if (value === "1") {
+      dispatch(resetFriends());
+    }
   };
 
   useEffect(() => {
@@ -162,7 +170,7 @@ function SideBar({ name, user_id }) {
               value={selectedTab}
               variant="fullWidth"
               centered
-              onChange={(e, value) => setSelectedTab(value)}
+              onChange={(e, value) => changeTabHandler(value)}
             >
               <Tab label="Messages" value="1" />
               <Tab label="Friends" value="2" />

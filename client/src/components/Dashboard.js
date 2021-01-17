@@ -7,6 +7,7 @@ import { useSocket } from "../contexts/SocketProvider";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { selectUser, logout } from "../features/user";
 import FriendRequestList from "./FriendRequestList";
+import Setttings from "./Settings";
 import {
   fetchFriends,
   fetchRequests,
@@ -40,7 +41,7 @@ function Dashboard() {
 
   useEffect(() => {
     const loadRequests = async () => {
-      const friendsList = await fetchFriends(user.user.id, 20, 1 + new Date());
+      const friendsList = await fetchFriends(user.user.id, 20, 1, +new Date());
 
       const FriendsRequests = await fetchRequests(
         user.user.id,
@@ -206,7 +207,7 @@ function Dashboard() {
               {selectedButton === 0 && <FriendRequestList />}
               {selectedButton === 1 && <PenddingRequests />}
               {selectedButton === 2 && <BlockedList />}
-              {selectedButton === 3 && <h2>Settings template</h2>}
+              {selectedButton === 3 && <Setttings />}
             </Route>
             <Route path="/dashboard/:chanel">
               <h1>CHANEL</h1>

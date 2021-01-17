@@ -197,7 +197,6 @@ app.get("/user/friends", async (req, res) => {
   const npp = req.query.npp;
   const numPerPage = parseInt(npp, 10) || 1;
   const lastFetched = parseInt(req.query.lts, 10) || 0;
-  const page = parseInt(req.query.page, 10) || 0;
   const searchRelationship = await pool.query(
     "SELECT * FROM user_relationship WHERE user_first_id = $1 OR user_second_id = $1 AND timestamp < $2 ORDER BY timestamp DESC LIMIT $3",
     [userId, lastFetched, numPerPage]
@@ -285,6 +284,36 @@ app.get("/logout", (req, res) => {
   req.logout();
   let response = { message: "logged out" };
   res.json(response);
+});
+
+app.put("/user/friends/block", async (req, res) => {
+  const { relationshipId, userId } = req.body;
+  try {
+    let searchRelationship = await pool.query(
+      "SELECT * FROM user_relationship WHERE id = $1",
+      [relationshipId]
+    );
+    if (searchRelationship.rows.length > 0) {
+      let newType =
+        searchRelationship.rows[0].user_first_id === userId
+          ? "blocked_by_first"
+          : "blocked_by_second";
+      await pool
+        .query("UPDATE user_relationship SET type = $1 WHERE id=$2", [
+          newType,
+          relationshipId,
+        ])
+        .then((relationship) => {
+          if (relationship) {
+            res.status(200).send(newType);
+          } else {
+            res.status(204).send("couldn't block user");
+          }
+        });
+    }
+  } catch (error) {
+    console.error(error);
+  }
 });
 
 app.get("/user/block", async (req, res) => {
@@ -399,7 +428,7 @@ server.listen(PORT, () => {
 
       await pool.query(
         "INSERT INTO user_relationship (user_first_id, user_second_id, type, timestamp) VALUES ($1, $2, $3,$4) RETURNING *",
-        [47, 48, "pending_second_first", +new Date()]
+        [47, 51, "friends", +new Date()]
       );
     }
   }

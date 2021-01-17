@@ -26,6 +26,13 @@
   border-style: none;
 }
 
+.selected_friend {
+  background-color: var(--clr-sidebar-background-light);
+  cursor: pointer;
+  border-radius: 8px;
+  border-style: none;
+}
+
 .sidebar-tabs-panel {
   flex-grow: 1;
   -webkit-user-select: none; /* Safari */
