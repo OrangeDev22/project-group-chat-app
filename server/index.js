@@ -24,40 +24,45 @@ io.on("connection", (socket) => {
   socket.join(id);
   console.log("New WS Connection...", id);
 
-  socket.on("addFriend", async (relationshipId, senderName, receiverName) => {
-    try {
-      const searchRelationship = await pool.query(
-        "UPDATE user_relationship SET type = $2 WHERE id = $1 AND type NOT LIKE '%blocked%' RETURNING *",
-        [relationshipId, `friends`]
-      );
-      if (searchRelationship.rows.length > 0) {
-        const senderId = searchRelationship.rows[0].user_first_id;
-        const searchSenderUserId = await pool.query(
-          "SELECT user_id FROM users WHERE id =$1",
-          [senderId]
+  socket.on(
+    "addFriend",
+    async (relationshipId, senderName, receiverName, receiver_user_id) => {
+      try {
+        const searchRelationship = await pool.query(
+          "UPDATE user_relationship SET type = $2 WHERE id = $1 AND type NOT LIKE '%blocked%' RETURNING *",
+          [relationshipId, `friends`]
         );
-        if (searchSenderUserId.rows.length > 0) {
-          const receiverUserId = searchSenderUserId.rows[0].user_id;
-          socket.emit(
-            "friendRequestAccepted",
-            relationshipId,
-            senderName,
-            "receiver"
+        if (searchRelationship.rows.length > 0) {
+          const senderId = searchRelationship.rows[0].user_first_id;
+          const searchSenderUserId = await pool.query(
+            "SELECT user_id FROM users WHERE id =$1",
+            [senderId]
           );
-          socket.broadcast
-            .to(receiverUserId)
-            .emit(
+          if (searchSenderUserId.rows.length > 0) {
+            const senderId = searchSenderUserId.rows[0].user_id;
+            socket.emit(
               "friendRequestAccepted",
               relationshipId,
-              receiverName,
-              "sender"
+              senderName,
+              senderId,
+              "receiver"
             );
+            socket.broadcast
+              .to(senderId)
+              .emit(
+                "friendRequestAccepted",
+                relationshipId,
+                receiverName,
+                receiver_user_id,
+                "sender"
+              );
+          }
         }
+      } catch (error) {
+        console.error(error);
       }
-    } catch (error) {
-      console.error(error);
     }
-  });
+  );
 
   socket.on("deleteRelationShip", async (id, type) => {
     try {
@@ -116,7 +121,7 @@ io.on("connection", (socket) => {
 
 async function verifyRelationShip(user1Id, user2Id) {
   const searchRelationShip = await pool.query(
-    "SELECT FROM user_relationship WHERE user_first_id = $1 AND user_second_id = $2",
+    "SELECT FROM user_relationship WHERE user_first_id = $1 AND user_second_id = $2 OR user_first_id = $2 AND user_second_id = $1",
     [user1Id, user2Id]
   );
   if (searchRelationShip.rows.length > 0) {
@@ -154,6 +159,7 @@ app.use(passport.initialize());
 // Store our variables to be persisted across the whole session. Works with app.use(Session) above
 app.use(passport.session());
 const initializePassport = require("./passportConfig");
+const { response } = require("express");
 initializePassport(passport);
 
 app.post("/login", (req, res, next) => {
@@ -186,6 +192,44 @@ app.get("/user", (req, res) => {
   res.json(req.user);
 });
 
+app.get("/user/friends", async (req, res) => {
+  const userId = req.query.id;
+  const npp = req.query.npp;
+  const numPerPage = parseInt(npp, 10) || 1;
+  const lastFetched = parseInt(req.query.lts, 10) || 0;
+  const page = parseInt(req.query.page, 10) || 0;
+  const searchRelationship = await pool.query(
+    "SELECT * FROM user_relationship WHERE user_first_id = $1 OR user_second_id = $1 AND timestamp < $2 ORDER BY timestamp DESC LIMIT $3",
+    [userId, lastFetched, numPerPage]
+  );
+
+  if (searchRelationship.rows.length > 0) {
+    let friends = [];
+    for (let {
+      id,
+      user_first_id,
+      user_second_id,
+      type,
+      timestamp,
+    } of searchRelationship.rows) {
+      let friendId = userId === user_first_id ? user_second_id : user_first_id;
+      searchFriendName = await pool.query("SELECT * FROM users WHERE id = $1", [
+        friendId,
+      ]);
+      if (searchFriendName.rows.length > 0) {
+        let userName = searchFriendName.rows[0].user_name;
+        let user_id = searchFriendName.rows[0].user_id;
+        let friend = { id, name: userName, type, timestamp, user_id };
+        type === "friends" && friends.push(friend);
+      }
+    }
+
+    friends.length > 0
+      ? res.status(200).json(friends)
+      : res.status(204).send("we didn't find any friends");
+  }
+});
+
 app.get("/user/requests", async (req, res) => {
   const userId = req.query.id;
   const npp = req.query.npp;
@@ -195,13 +239,12 @@ app.get("/user/requests", async (req, res) => {
   const numPerPage = parseInt(npp, 10) || 1;
   const page = parseInt(req.query.page, 10) || 0;
   const lastFetched = parseInt(req.query.lts, 10) || 0;
-  const start = (page - 1) * numPerPage;
-  const searchRelationShips = await pool.query(
+  const searchRelationships = await pool.query(
     `SELECT * FROM user_relationship WHERE ${column}= $1 AND timestamp < $3 ORDER BY timestamp DESC LIMIT $2 `,
     [userId, numPerPage, lastFetched]
   );
 
-  if (searchRelationShips.rows.length > 0) {
+  if (searchRelationships.rows.length > 0) {
     let usersNames = [];
     for (let {
       id,
@@ -209,7 +252,7 @@ app.get("/user/requests", async (req, res) => {
       user_second_id,
       type,
       timestamp,
-    } of searchRelationShips.rows) {
+    } of searchRelationships.rows) {
       let userName = {};
 
       if (requestType === "friend_request") {
@@ -229,7 +272,7 @@ app.get("/user/requests", async (req, res) => {
           type: requestType === "friend_request" ? type : "request_sender",
           timestamp,
         };
-        type.includes("blocked") || usersNames.push(relationship);
+        type === "pending_second_first" && usersNames.push(relationship);
       }
     }
     res.status(200).send(usersNames);

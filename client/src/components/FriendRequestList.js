@@ -71,7 +71,8 @@ function FriendRequestList() {
   };
 
   const addFriendHandler = async (id, receiverName, senderName) => {
-    socket.emit("addFriend", id, senderName, receiverName);
+    console.log("USER ID", user.user_id);
+    socket.emit("addFriend", id, senderName, receiverName, user.user.user_id);
   };
 
   const blockUserhandler = async (id, name) => {

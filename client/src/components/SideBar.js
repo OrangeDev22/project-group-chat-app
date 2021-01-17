@@ -13,6 +13,7 @@ import {
   deleteRelationship,
 } from "../features/friendsSlice";
 import { useSelector, useDispatch } from "react-redux";
+import FriendsList from "./FriendsList";
 
 const useStyles = makeStyles((theme) => ({
   tabs: {
@@ -39,6 +40,7 @@ const useStyles = makeStyles((theme) => ({
   },
   tabPanel: {
     padding: 0,
+    height: "100%",
   },
 }));
 
@@ -66,31 +68,30 @@ function SideBar({ name, user_id }) {
   useEffect(() => {
     if (socket == null) return;
 
-    socket.on("friendRequestAccepted", (relationshipId, name, type) => {
-      if (type === "receiver") {
+    socket.on(
+      "friendRequestAccepted",
+      (relationshipId, name, user_id, type) => {
+        let relationshipType =
+          type === "receiver" ? "pending_second_first" : "request_sender";
+
         dispatch(
           deleteRelationship({
             relationshipId,
-            type: "pending_second_first",
+            type: relationshipType,
           })
         );
-      } else {
+
         dispatch(
-          deleteRelationship({
-            relationshipId,
-            type: "request_sender",
+          addFriend({
+            friend: {
+              relationshipId,
+              name,
+              user_id,
+            },
           })
         );
       }
-      dispatch(
-        addFriend({
-          friend: {
-            relationshipId,
-            name,
-          },
-        })
-      );
-    });
+    );
 
     return () => socket.off("friendRequestAccepted");
   }, [socket]);
@@ -173,16 +174,7 @@ function SideBar({ name, user_id }) {
             Item One
           </TabPanel>
           <TabPanel value="2" className={classes.tabPanel}>
-            {friends.map((friend, index) => {
-              return (
-                <div className="sidebar-friend-list-item" key={index}>
-                  <Avatar className={classes.small} style={{ marginRight: 10 }}>
-                    {friend.charAt(0).toUpperCase()}
-                  </Avatar>
-                  <p>{friend}</p>
-                </div>
-              );
-            })}
+            <FriendsList></FriendsList>
           </TabPanel>
         </div>
         <div className="sidebar-bottom-container">

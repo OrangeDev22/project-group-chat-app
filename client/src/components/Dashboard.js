@@ -7,11 +7,16 @@ import { useSocket } from "../contexts/SocketProvider";
 import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
 import { selectUser, logout } from "../features/user";
 import FriendRequestList from "./FriendRequestList";
-import { fetchRequests, fetchBlockedRelationships } from "../utils/useFetch";
+import {
+  fetchFriends,
+  fetchRequests,
+  fetchBlockedRelationships,
+} from "../utils/useFetch";
 import BlockedList from "./BlockedList";
 import {
   selectFriends,
   addFriendRequest,
+  setFriends,
   setFriendRequests,
   resetFriendRequests,
   resetPendingRequests,
@@ -35,6 +40,8 @@ function Dashboard() {
 
   useEffect(() => {
     const loadRequests = async () => {
+      const friendsList = await fetchFriends(user.user.id, 20, 1 + new Date());
+
       const FriendsRequests = await fetchRequests(
         user.user.id,
         20,
@@ -50,7 +57,10 @@ function Dashboard() {
         +new Date()
       );
       const BlockedUsers = await fetchBlockedRelationships(user.user.id);
-      console.log("blocked users", BlockedUsers);
+
+      if (friendsList) {
+        dispatch(setFriends(friendsList));
+      }
       if (FriendsRequests) {
         dispatch(setFriendRequests(FriendsRequests));
       }
@@ -102,7 +112,6 @@ function Dashboard() {
     if (socket == null) return;
 
     socket.on("receiveFriendRequest", function (senderName, id) {
-      console.log("SENDER", senderName);
       dispatch(
         addFriendRequest({
           newFriendRequest: {

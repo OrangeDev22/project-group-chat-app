@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 export const friendsSlice = createSlice({
   name: "friends",
   initialState: {
-    friends: ["Marco", "Pedro"],
+    friends: [],
     friendRequests: [],
     pendingRequests: [],
     usersBlocked: [],
@@ -30,6 +30,9 @@ export const friendsSlice = createSlice({
       const tempArray = state.usersBlocked;
       tempArray.unshift(newUserBlocked);
       state.usersBlocked = tempArray;
+    },
+    setFriends: (state, action) => {
+      state.friends = [...state.friends, ...action.payload];
     },
     setBlockedUsers: (state, action) => {
       state.usersBlocked = [...state.usersBlocked, ...action.payload];
@@ -80,6 +83,7 @@ export const friendsSlice = createSlice({
 export const {
   addFriend,
   addFriendRequest,
+  setFriends,
   setFriendRequests,
   setPendingRequests,
   addPendingRequest,

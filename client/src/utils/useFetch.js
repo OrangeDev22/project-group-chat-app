@@ -1,3 +1,23 @@
+export const fetchFriends = async (id, numberPerPage, page, timestamp) => {
+  try {
+    let query = await fetch(
+      `http://localhost:5000/user/friends?id=${id}&npp=${numberPerPage}&page=${page}&lts=${timestamp}`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
+    if (query.status === 200) {
+      let data = await query.json();
+      return data;
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
 export const fetchRequests = async (
   id,
   numberPerPage,

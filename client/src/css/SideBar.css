@@ -1,11 +1,29 @@
 .sidebar {
   display: flex;
   flex-direction: column;
+  height: 100%;
   background-color: #2f3136;
 }
 .sidebar-tabs {
   display: flex;
   flex-direction: column;
+}
+.friends_list {
+  height: 100%;
+}
+
+.side_bar_friend_list_item {
+  display: flex;
+  align-items: center;
+  margin: 10px;
+  padding: 10px;
+}
+
+.side_bar_friend_list_item:hover {
+  background-color: var(--clr-sidebar-background-light);
+  cursor: pointer;
+  border-radius: 8px;
+  border-style: none;
 }
 
 .sidebar-tabs-panel {
@@ -38,11 +56,7 @@
   width: 100%;
   border-top: 1px solid var(--clr-contrast);
 }
-/* .modal-add-friend {
-  width: 400px;
-  background-color: var(--clr-primary-background);
-  padding: 30px;
-} */
+
 .modal-form {
   display: flex;
   flex-direction: column;
