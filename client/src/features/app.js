@@ -1,26 +1,40 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { useSocket } from "../contexts/SocketProvider";
-// const socket = useSocket();
+
 export const appSlice = createSlice({
   name: "app",
   initialState: {
-    channelId: null,
-    channelName: null,
+    conversations: [],
+    selectedConversationIndex: -1,
   },
   reducers: {
-    setChannelId: (state, action) => {
-      state.app += action.payload;
+    setConversation: (state, action) => {
+      state.conversations = action.payload;
     },
-    // sendFriendRequest: (state, action) => {
-    //   const { user1, user2 } = action.payload;
-    //   socket.emit("send-friend-request", { user1, user2 });
-    // },
+    addConversation: (state, action) => {
+      state.conversations = [action.payload, ...state.conversations];
+    },
+    setSelectedConversation: (state, action) => {
+      state.selectedConversationIndex = action.payload;
+    },
+    addMessageinConversation: (state, action) => {
+      const { senderName, text, index } = action.payload;
+      let messages = state.conversations[index].messages;
+      state.conversations[index].messages = [
+        ...messages,
+        { sender: senderName, text },
+      ];
+    },
   },
 });
 
-export const { setChannelId } = appSlice.actions;
+export const {
+  setConversation,
+  addConversation,
+  setSelectedConversation,
+  addMessageinConversation,
+} = appSlice.actions;
 
-export const selectChannelId = (state) => state.channelId;
-export const selectChannelName = (state) => state.channelName;
+export const selectApp = (state) => state.app;
+export const selectConversations = (state) => state.app.conversations;
 
 export default appSlice.reducer;

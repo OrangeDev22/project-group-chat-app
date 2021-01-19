@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Button } from "@material-ui/core";
-import { useHistory } from "react-router-dom";
+import { useHistory, useParams } from "react-router-dom";
 import SideBar from "./SideBar";
 import { useSocket } from "../contexts/SocketProvider";
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import OpenConversation from "./OpenConversation";
 import { selectUser, logout } from "../features/user";
 import FriendRequestList from "./FriendRequestList";
+import {
+  selectApp,
+  selectConversations,
+  addMessageinConversation,
+  addConversation,
+  setSelectedConversation,
+} from "../features/app";
 import Setttings from "./Settings";
 import {
   fetchFriends,
@@ -31,8 +38,11 @@ import PenddingRequests from "./PendingRequestsList";
 
 function Dashboard() {
   let history = useHistory();
+  const app = useSelector(selectApp);
   const user = useSelector(selectUser);
+  const conversations = useSelector(selectConversations);
   const friends = useSelector(selectFriends);
+  const { conversationId } = useParams();
   const [selectedButton, setSelectedButton] = useState(2);
   const [name, setName] = useState("");
   const [userId, setUserId] = useState("");
@@ -112,22 +122,34 @@ function Dashboard() {
   useEffect(() => {
     if (socket == null) return;
 
-    socket.on("receiveFriendRequest", function (senderName, id) {
-      dispatch(
-        addFriendRequest({
-          newFriendRequest: {
-            name: senderName,
-            id,
-          },
-        })
-      );
-    });
-
-    return () => socket.off("receiveFriendRequest");
-  }, [socket]);
-
-  useEffect(() => {
-    if (socket == null) return;
+    socket.on(
+      "receiveMessage",
+      ({ recipients, sender, text, conversationId }) => {
+        let found = false;
+        for (let i = 0; i < conversations.length; i++) {
+          if (conversations[i].id === conversationId) {
+            found = true;
+            dispatch(
+              addMessageinConversation({ senderName: sender, text, index: i })
+            );
+            break;
+          }
+        }
+        if (!found) {
+          dispatch(
+            addConversation({
+              id: conversationId,
+              recipients,
+              messages: [{ sender, text }],
+            })
+          );
+          app.selectedConversationIndex !== -1 &&
+            dispatch(
+              setSelectedConversation(app.selectedConversationIndex + 1)
+            );
+        }
+      }
+    );
 
     socket.on("relationshipDeleted", (relationshipId, type) => {
       dispatch(
@@ -138,83 +160,87 @@ function Dashboard() {
       );
     });
 
-    return () => socket.off("relationshipDeleted");
-  }, [socket]);
-
-  if (user.user === null) {
-    <></>;
-  }
+    socket.on("receiveFriendRequest", function (senderName, id) {
+      dispatch(
+        addFriendRequest({
+          newFriendRequest: {
+            name: senderName,
+            id,
+          },
+        })
+      );
+    });
+    return () => {
+      socket.off("receiveMessage");
+      socket.off("receiveFriendRequest");
+      socket.off("relationshipDeleted");
+    };
+  }, [socket, dispatch, conversations]);
 
   return (
     <div className="dashboard">
       <SideBar name={name} user_id={userId} />
-      <div className="dashboard-panel-right">
-        <Router>
-          <Switch>
-            <Route exact path="/dashboard/">
-              <div className="dashboard-buttons-container">
-                <div className="dashboard-buttongroup">
-                  <Button
-                    style={{ marginRight: 10 }}
-                    size={"small"}
-                    className="dashboard-buttongroup-button"
-                    variant={selectedButton === 0 ? "contained" : "text"}
-                    onClick={() => changeButtonHandler(0)}
-                  >
-                    Requests
-                  </Button>
-                  <Button
-                    style={{ marginRight: 10 }}
-                    size={"small"}
-                    className="dashboard-buttongroup-button"
-                    variant={selectedButton === 1 ? "contained" : "text"}
-                    onClick={() => changeButtonHandler(1)}
-                  >
-                    Pending
-                  </Button>
-                  <Button
-                    size={"small"}
-                    style={{ marginRight: 10 }}
-                    className="dashboard-buttongroup-button"
-                    variant={selectedButton === 2 ? "contained" : "text"}
-                    onClick={() => changeButtonHandler(2)}
-                  >
-                    Blocked
-                  </Button>
+      {!conversationId && (
+        <div className="dashboard-panel-right">
+          <div className="dashboard-buttons-container">
+            <div className="dashboard-buttongroup">
+              <Button
+                style={{ marginRight: 10 }}
+                size={"small"}
+                className="dashboard-buttongroup-button"
+                variant={selectedButton === 0 ? "contained" : "text"}
+                onClick={() => changeButtonHandler(0)}
+              >
+                Requests
+              </Button>
+              <Button
+                style={{ marginRight: 10 }}
+                size={"small"}
+                className="dashboard-buttongroup-button"
+                variant={selectedButton === 1 ? "contained" : "text"}
+                onClick={() => changeButtonHandler(1)}
+              >
+                Pending
+              </Button>
+              <Button
+                size={"small"}
+                style={{ marginRight: 10 }}
+                className="dashboard-buttongroup-button"
+                variant={selectedButton === 2 ? "contained" : "text"}
+                onClick={() => changeButtonHandler(2)}
+              >
+                Blocked
+              </Button>
 
-                  <Button
-                    size={"small"}
-                    style={{ marginRight: 10 }}
-                    className="dashboard-buttongroup-button"
-                    variant={selectedButton === 3 ? "contained" : "text"}
-                    onClick={() => changeButtonHandler(3)}
-                  >
-                    Settings
-                  </Button>
+              <Button
+                size={"small"}
+                style={{ marginRight: 10 }}
+                className="dashboard-buttongroup-button"
+                variant={selectedButton === 3 ? "contained" : "text"}
+                onClick={() => changeButtonHandler(3)}
+              >
+                Settings
+              </Button>
 
-                  <Button
-                    size={"small"}
-                    style={{ marginRight: 10 }}
-                    className="dashboard-buttongroup-button"
-                    onClick={() => handleLogout()}
-                    variant="contained"
-                    color={"secondary"}
-                  >
-                    Logout{" "}
-                  </Button>
-                </div>
-              </div>
-              {selectedButton === 0 && <FriendRequestList />}
-              {selectedButton === 1 && <PenddingRequests />}
-              {selectedButton === 2 && <BlockedList />}
-              {selectedButton === 3 && <Setttings />}
-            </Route>
-            <Route path="/dashboard/:chanel">
-              <h1>CHANEL</h1>
-            </Route>
-          </Switch>
-        </Router>
-      </div>
+              <Button
+                size={"small"}
+                style={{ marginRight: 10 }}
+                className="dashboard-buttongroup-button"
+                onClick={() => handleLogout()}
+                variant="contained"
+                color={"secondary"}
+              >
+                Logout{" "}
+              </Button>
+            </div>
+          </div>
+          {selectedButton === 0 && <FriendRequestList />}
+          {selectedButton === 1 && <PenddingRequests />}
+          {selectedButton === 2 && <BlockedList />}
+          {selectedButton === 3 && <Setttings />}
+        </div>
+      )}
+      {conversationId && <OpenConversation />}
     </div>
   );
 }

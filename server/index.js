@@ -25,6 +25,22 @@ io.on("connection", (socket) => {
   console.log("New WS Connection...", id);
 
   socket.on(
+    "sendMessage",
+    ({ recipients, text, senderName, conversationId }) => {
+      recipients.forEach((recipient) => {
+        const newRecipients = recipients.filter((r) => r.id !== recipient.id);
+        newRecipients.push({ id, name: senderName });
+        socket.broadcast.to(recipient.id).emit("receiveMessage", {
+          recipients: newRecipients,
+          sender: senderName,
+          conversationId,
+          text,
+        });
+      });
+    }
+  );
+
+  socket.on(
     "addFriend",
     async (relationshipId, senderName, receiverName, receiver_user_id) => {
       try {

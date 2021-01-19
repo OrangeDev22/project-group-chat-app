@@ -26,6 +26,11 @@
   border-style: none;
 }
 
+.modal_list_item {
+  display: flex;
+  align-items: center;
+}
+
 .selected_friend {
   background-color: var(--clr-sidebar-background-light);
   cursor: pointer;
@@ -82,4 +87,39 @@
   border-radius: 2px;
   color: white;
   cursor: pointer;
+}
+
+.list_item_wrapper {
+  border-top: 1px solid var(--clr-sidebar-background-light);
+}
+
+.conversations {
+  margin-top: 8px;
+}
+
+.conversations_list_item {
+  display: flex;
+  margin: 10px;
+  padding: 10px;
+  justify-content: center;
+}
+.list_item_wrapper:hover {
+  background-color: var(--clr-sidebar-background-light);
+  border-top: none;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.selected_conversation {
+  background-color: var(--clr-sidebar-background-dark);
+  border-top: none;
+}
+
+.conversation_list_recipients {
+  margin-left: 5px;
+}
+
+.conversations {
+  display: flex;
+  height: 100%;
 }

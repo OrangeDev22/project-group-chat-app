@@ -27,13 +27,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-function FriendsList() {
-  const cache = useRef(
-    new CellMeasurerCache({
-      fixedWidth: true,
-      defaultHeight: 50,
-    })
-  );
+function FriendsList({ isCreatingChat }) {
   const friendListRef = useRef();
   const friends = useSelector(selectFriends);
   const friendsList = friends.friends;
@@ -47,6 +41,12 @@ function FriendsList() {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const [loading, setLoading] = useState(false);
+  const cache = useRef(
+    new CellMeasurerCache({
+      fixedWidth: true,
+      defaultHeight: 50,
+    })
+  );
 
   const handleClick = (event, index) => {
     setAnchorEl(event.currentTarget);
