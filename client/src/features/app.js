@@ -1,13 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
+import useLocalStorage from "../hooks/useLocalStorage";
 
 export const appSlice = createSlice({
   name: "app",
   initialState: {
     conversations: [],
     selectedConversationIndex: -1,
+    PREFIX: "groupchat-app-",
   },
   reducers: {
-    setConversation: (state, action) => {
+    setConversations: (state, action) => {
       state.conversations = action.payload;
     },
     addConversation: (state, action) => {
@@ -28,7 +30,7 @@ export const appSlice = createSlice({
 });
 
 export const {
-  setConversation,
+  setConversations,
   addConversation,
   setSelectedConversation,
   addMessageinConversation,
@@ -36,5 +38,6 @@ export const {
 
 export const selectApp = (state) => state.app;
 export const selectConversations = (state) => state.app.conversations;
+export const selectPrefix = (state) => state.app.PREFIX;
 
 export default appSlice.reducer;

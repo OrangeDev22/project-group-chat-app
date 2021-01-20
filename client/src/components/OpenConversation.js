@@ -97,6 +97,7 @@ function OpenConversation() {
           className="conversation_close_button"
           inputRef={messageRef}
           onClick={() => {
+            dispatch(setSelectedConversation(-1));
             history.push("/dashboard");
           }}
         >

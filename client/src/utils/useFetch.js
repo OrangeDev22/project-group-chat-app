@@ -28,7 +28,8 @@ export const blockFriend = async (relationshipId, userId) => {
       body: JSON.stringify(body),
     });
     if (query.status === 200) {
-      let type = await query.text();
+      let type = await query.json();
+      console.log(type.newType);
       return type;
     } else {
       return null;

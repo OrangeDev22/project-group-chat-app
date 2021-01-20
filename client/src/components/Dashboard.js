@@ -12,6 +12,7 @@ import {
   selectConversations,
   addMessageinConversation,
   addConversation,
+  setConversations,
   setSelectedConversation,
 } from "../features/app";
 import Setttings from "./Settings";
@@ -36,6 +37,8 @@ import {
 import "../css/Dashboard.css";
 import PenddingRequests from "./PendingRequestsList";
 
+const PREFIX = "groupchat-";
+
 function Dashboard() {
   let history = useHistory();
   const app = useSelector(selectApp);
@@ -48,10 +51,17 @@ function Dashboard() {
   const [userId, setUserId] = useState("");
   const dispatch = useDispatch();
   const socket = useSocket();
+  const key = user.user && `messages-${user.user.id}`;
+  const prefixedKey = PREFIX + key;
 
   useEffect(() => {
     const loadRequests = async () => {
       const friendsList = await fetchFriends(user.user.id, 20, 1, +new Date());
+      const jsonValue = localStorage.getItem(prefixedKey);
+      const jsonObject = await JSON.parse(jsonValue);
+      if (jsonValue != null) {
+        dispatch(setConversations(jsonObject));
+      }
 
       const FriendsRequests = await fetchRequests(
         user.user.id,
@@ -143,15 +153,17 @@ function Dashboard() {
               messages: [{ sender, text }],
             })
           );
-          app.selectedConversationIndex !== -1 &&
+          if (app.selectedConversationIndex !== -1) {
             dispatch(
               setSelectedConversation(app.selectedConversationIndex + 1)
             );
+          }
         }
       }
     );
 
     socket.on("relationshipDeleted", (relationshipId, type) => {
+      console.log("type", type);
       dispatch(
         deleteRelationship({
           relationshipId,
@@ -175,7 +187,13 @@ function Dashboard() {
       socket.off("receiveFriendRequest");
       socket.off("relationshipDeleted");
     };
-  }, [socket, dispatch, conversations]);
+  }, [socket, app, conversations]);
+
+  useEffect(() => {
+    if (conversations.length > 0) {
+      localStorage.setItem(prefixedKey, JSON.stringify(conversations));
+    }
+  }, [conversations, prefixedKey]);
 
   return (
     <div className="dashboard">

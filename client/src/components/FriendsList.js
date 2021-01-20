@@ -65,8 +65,9 @@ function FriendsList({ isCreatingChat }) {
   };
 
   const blockFriendHandler = async (relationshipId, userId, friendName) => {
-    let response = blockFriend(relationshipId, userId);
+    let response = await blockFriend(relationshipId, userId);
     if (response) {
+      console.log(response);
       dispatch(deleteRelationship({ relationshipId, type: "friends" }));
       dispatch(
         addBlockedUser({

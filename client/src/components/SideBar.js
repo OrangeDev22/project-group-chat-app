@@ -83,11 +83,15 @@ function SideBar({ name, user_id }) {
       let newRecipient = { name: friend.name, id: friend.id };
       recipients.push(newRecipient);
     });
-    dispatch(setSelectedConversation(app.selectedConversationIndex + 1));
-    dispatch(addConversation({ id: conversationId, recipients, messages: [] }));
-
-    setOpenNewChatModal(false);
-    setSelectedFriends([]);
+    if (recipients.length > 0) {
+      app.selectedConversationIndex !== -1 &&
+        dispatch(setSelectedConversation(app.selectedConversationIndex + 1));
+      dispatch(
+        addConversation({ id: conversationId, recipients, messages: [] })
+      );
+      setOpenNewChatModal(false);
+      setSelectedFriends([]);
+    }
   };
 
   let clickHandler = () => {

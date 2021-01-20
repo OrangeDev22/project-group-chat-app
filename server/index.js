@@ -45,8 +45,8 @@ io.on("connection", (socket) => {
     async (relationshipId, senderName, receiverName, receiver_user_id) => {
       try {
         const searchRelationship = await pool.query(
-          "UPDATE user_relationship SET type = $2 WHERE id = $1 AND type NOT LIKE '%blocked%' RETURNING *",
-          [relationshipId, `friends`]
+          "UPDATE user_relationship SET type = $2, timestamp = $3  WHERE id = $1 AND type NOT LIKE '%blocked%' RETURNING *",
+          [relationshipId, `friends`, +new Date()]
         );
         if (searchRelationship.rows.length > 0) {
           const senderId = searchRelationship.rows[0].user_first_id;
@@ -81,6 +81,7 @@ io.on("connection", (socket) => {
   );
 
   socket.on("deleteRelationShip", async (id, type) => {
+    console.log("TYPE", type);
     try {
       const deleteRelationship = await pool.query(
         "DELETE FROM user_relationship WHERE id =$1",
@@ -315,13 +316,13 @@ app.put("/user/friends/block", async (req, res) => {
           ? "blocked_by_first"
           : "blocked_by_second";
       await pool
-        .query("UPDATE user_relationship SET type = $1 WHERE id=$2", [
-          newType,
-          relationshipId,
-        ])
+        .query(
+          "UPDATE user_relationship SET type = $1, timestamp = $3 WHERE id=$2",
+          [newType, relationshipId, +new Date()]
+        )
         .then((relationship) => {
           if (relationship) {
-            res.status(200).send(newType);
+            res.status(200).json({ newType });
           } else {
             res.status(204).send("couldn't block user");
           }
@@ -379,8 +380,8 @@ app.put("/relationship/block", async (req, res) => {
   const newType = parseInt(req.query.type);
   try {
     const blockRelationship = await pool.query(
-      "UPDATE user_relationship SET type = $1 WHERE id = $2",
-      [newType, relationshipId]
+      "UPDATE user_relationship SET type = $1, timestamp = $3 WHERE id = $2",
+      [newType, relationshipId, +new Date()]
     );
 
     if (blockRelationship.rowCount > 0) {
