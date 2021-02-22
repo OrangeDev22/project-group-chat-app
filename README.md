@@ -4,11 +4,11 @@
 
 # How to set up this project
 
-first open your terminal in the client and server folders and in each one execute 
+first open your terminal in the client and server folders then in each one execute 
 
 ``` npm install ```
 
-Create a postgresql database using the .sql file inside server folder.
+Create a postgresql database using the .sql file inside the server folder.
 
 Add the next variables to your server enviroment. 
 
