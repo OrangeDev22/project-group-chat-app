@@ -15,5 +15,6 @@ CREATE TABLE user_relationship(
     id BIGSERIAL PRIMARY KEY NOT NULL,
     user_first_id BIGSERIAl NOT NULL,
     user_second_id BIGSERIAl NOT NULL,
+    timestamp BIGSERIAl NOT NULL,
     type VARCHAR(255) NOT NULL
 );

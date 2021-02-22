@@ -36,6 +36,19 @@ function Settings() {
           </Button>
         </div>
       </div>
+      <div className="settings_item">
+        <div className="settings_wrapper">
+          <p>DELETE ACCOUNT</p>
+          <Button
+            style={{ marginLeft: "auto" }}
+            color="secondary"
+            variant="contained"
+            size="small"
+          >
+            DELETE
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
